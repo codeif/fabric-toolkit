@@ -20,12 +20,12 @@ def test():
 
 @task
 def update():
-    sudo('apt-get update')
+    sudo('apt-get -q update')
 
 
 @task
 def upgrade():
-    sudo('apt-get upgrade')
+    sudo('apt-get -y -q upgrade')
 
 
 @task
@@ -45,6 +45,7 @@ def sudo_nopassword():
     sudo命令无需密码
     http://stackoverflow.com/questions/323957/how-do-i-edit-etc-sudoers-from-a-script
     """
+    mkdir(BASE_PATH)
     user = run('whoami')
     add_content = '{}\tALL=(ALL) NOPASSWD:ALL'.format(user)
     with cd(BASE_PATH):
@@ -70,17 +71,17 @@ def dotfiles():
         if not exists('dotfiles'):
             run('git clone https://github.com/codeif/dotfiles.git')
         with cd('dotfiles'):
-            run('git pull')
+            run('git pull -q')
             run('./bootstrap.sh -f')
-    sudo('apt-get install exuberant-ctags')
+    sudo('apt-get -y -q install exuberant-ctags')
 
 
 @task
 def install_pip():
     if not exists('/usr/bin/python'):
-        sudo('apt-get -y install python')
+        sudo('apt-get -y -q install python')
     if not exists('/usr/bin/python3'):
-        sudo('apt-get -y install python3')
+        sudo('apt-get -y -q install python3')
     if not exists('/usr/local/bin/pip'):
         run('curl --silent --show-error --retry 3 '
             'https://bootstrap.pypa.io/get-pip.py | '
@@ -100,13 +101,13 @@ def pip_conf():
 @task
 def install_nginx():
     if not exists('/usr/sbin/nginx'):
-        sudo('apt-get -y install nginx')
+        sudo('apt-get -y -q install nginx')
 
 
 @task
 def install_supervisor():
     if not exists('/usr/bin/supervisorctl'):
-        sudo('apt-get -y install supervisor')
+        sudo('apt-get -y -q install supervisor')
         sudo('service supervisor start')
         # 设置开机启动
         sudo('update-rc.d supervisor defaults')
@@ -118,7 +119,7 @@ def install_supervisor():
 def ntpdate():
     """同步时间"""
     if not exists('/usr/sbin/ntpdate'):
-        sudo('apt-get -y install ntpdate')
+        sudo('apt-get -y -q install ntpdate')
     sudo('ntpdate cn.pool.ntp.org')
 
 
