@@ -57,6 +57,12 @@ def sudo_nopassword():
     sudo('EDITOR="cp {0}" visudo'.format(tmp))
 
 
+def install_vim_gtk():
+    """安装vim-gtk"""
+    if not exists('/usr/bin/vim.gtk'):
+        sudo('apt-get -y -q install vim-gtk')
+
+
 @task
 def default_editor():
     """更改默认编辑器"""
@@ -116,6 +122,20 @@ def install_supervisor():
 
 
 @task
+def install_virtualenv():
+    run('sudo -H pip install virtualenv')
+    run('sudo -H pip install virtualenvwrapper')
+    mkdir('~/.virtualenvs')
+    contents = [
+        '',
+        'export WORKON_HOME=$HOME/.virtualenvs',
+        'source /usr/local/bin/virtualenvwrapper.sh',
+    ]
+    if not contains('~/.bashrc', 'export WORKON_HOME'):
+        append('~/.bashrc', '\n'.join(contents))
+
+
+@task
 def ntpdate():
     """同步时间"""
     if not exists('/usr/sbin/ntpdate'):
@@ -123,14 +143,47 @@ def ntpdate():
     sudo('ntpdate cn.pool.ntp.org')
 
 
-@task
+@task(alias='git-aware-prompt')
+def git_aware_prompt():
+    """git显示分支名
+    https://github.com/jimeh/git-aware-prompt
+    """
+    mkdir('~/.bash')
+    with cd('~/.bash'):
+        if not exists('git-aware-prompt'):
+            run('git clone git://github.com/jimeh/git-aware-prompt.git')
+        else:
+            with cd('git-aware-prompt'):
+                run('git pull')
+    contents = [
+        '',
+        'export GITAWAREPROMPT=~/.bash/git-aware-prompt',
+        'source "${GITAWAREPROMPT}/main.sh"',
+        (r'export PS1="\${debian_chroot:+(\$debian_chroot)}\u@\h:\w '
+         r'\[$txtcyn\]\$git_branch\[$txtred\]\$git_dirty\[$txtrst\]\$ "'),
+    ]
+    if not contains('~/.bashrc', 'export GITAWAREPROMPT'):
+        append('~/.bashrc', '\n'.join(contents))
+
+
+@task(default=True)
 def all_task():
     sudo_nopassword()
     cn_source()
     update()
-    default_editor()
+
+    install_vim_gtk()
+    # set default editor
+    mkdir(BASE_PATH)
+    with cd(BASE_PATH):
+        tmp = os.path.join(run('pwd'), 'default-editor.tmp')
+    run('update-alternatives --query editor | grep \'Best:\' > {}'.format(tmp))
+    if not contains(tmp, 'vim'):
+        default_editor()
+
     dotfiles()
     install_pip()
     pip_conf()
     install_nginx()
     install_supervisor()
+    git_aware_prompt()

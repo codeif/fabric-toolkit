@@ -11,4 +11,3 @@ def mkdir(path, use_sudo=False):
         sudo(command)
     else:
         run(command)
-
