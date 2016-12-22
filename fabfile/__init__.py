@@ -135,14 +135,6 @@ def install_virtualenv():
         append('~/.bashrc', '\n'.join(contents))
 
 
-@task
-def ntpdate():
-    """同步时间"""
-    if not exists('/usr/sbin/ntpdate'):
-        sudo('apt-get -y -q install ntpdate')
-    sudo('ntpdate cn.pool.ntp.org')
-
-
 @task(alias='git-aware-prompt')
 def git_aware_prompt():
     """git显示分支名
@@ -166,6 +158,14 @@ def git_aware_prompt():
         append('~/.bashrc', '\n'.join(contents))
 
 
+@task
+def ntpdate():
+    """同步时间"""
+    if not exists('/usr/sbin/ntpdate'):
+        sudo('apt-get -y -q install ntpdate')
+    sudo('ntpdate cn.pool.ntp.org')
+
+
 @task(default=True)
 def all_task():
     sudo_nopassword()
@@ -186,4 +186,6 @@ def all_task():
     pip_conf()
     install_nginx()
     install_supervisor()
+    install_virtualenv()
     git_aware_prompt()
+    ntpdate()
