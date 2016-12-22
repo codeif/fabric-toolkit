@@ -29,6 +29,13 @@ def upgrade():
 
 
 @task
+def lc_all():
+    path = '/etc/default/locale'
+    if not contains(path, 'LC_ALL'):
+        append(path, 'LC_ALL="en_US.UTF-8"', use_sudo=True)
+
+
+@task
 def cn_source():
     with cd('/etc/apt'):
         bak = ''
@@ -172,6 +179,7 @@ def all_task():
     sudo_nopassword()
     cn_source()
     update()
+    lc_all()
 
     install_vim_gtk()
     # set default editor
