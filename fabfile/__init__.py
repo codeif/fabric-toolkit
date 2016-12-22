@@ -147,15 +147,16 @@ def git_aware_prompt():
         else:
             with cd('git-aware-prompt'):
                 run('git pull')
-    contents = [
-        '',
-        'export GITAWAREPROMPT=~/.bash/git-aware-prompt',
-        'source "${GITAWAREPROMPT}/main.sh"',
-        (r'export PS1="\${debian_chroot:+(\$debian_chroot)}\u@\h:\w '
-         r'\[$txtcyn\]\$git_branch\[$txtred\]\$git_dirty\[$txtrst\]\$ "'),
-    ]
-    if not contains('~/.bashrc', 'export GITAWAREPROMPT'):
-        append('~/.bashrc', '\n'.join(contents))
+
+    if contains('~/.bashrc', 'export GITAWAREPROMPT'):
+        return
+
+    mkdir(BASE_PATH)
+    with cd(BASE_PATH):
+        tmp = os.path.join(run('pwd'), 'git-aware-prompt.tmp')
+    path = conf_file.get_path('git-aware-prompt.bashrc')
+    put(path, tmp)
+    run('cat {} >> ~/.bashrc'.format(tmp))
 
 
 @task
