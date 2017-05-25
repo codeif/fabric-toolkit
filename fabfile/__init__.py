@@ -64,10 +64,17 @@ def sudo_nopassword():
     sudo('EDITOR="cp {0}" visudo'.format(tmp))
 
 
+@task
 def install_vim_gtk():
     """安装vim-gtk"""
     if not exists('/usr/bin/vim.gtk'):
         sudo('apt-get -y -q install vim-gtk')
+
+
+@task
+def install_git():
+    if not exists('/usr/bin/git'):
+        sudo('apt-get -y -q install git')
 
 
 @task
@@ -180,6 +187,7 @@ def all_task():
     cn_source()
     update()
     lc_all()
+    install_git()
 
     install_vim_gtk()
     # set default editor
